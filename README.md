@@ -10,7 +10,7 @@
 
 ## 構築予定のディレクトリ構成
 
-```
+```text
 terraform/
 ├── bootstrap/   # tfstate用バックエンド（S3 + DynamoDB）
 ├── modules/     # network, security, alb, ecs_cluster, ecs_service, rds, s3, cognito, ecr, iam, observability
