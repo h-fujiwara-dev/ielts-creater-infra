@@ -8,6 +8,8 @@
 
 [ielts-creater #00044](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/tickets/00044_backendのAWSインフラ構築とSupabase接続.md)でdev環境のAWSインフラ（VPC/ECS Fargate/API Gateway/S3/ECR等）を構築済みです。ALBは使わず、コスト最適化のためAPI Gateway（HTTP API）+ VPC Link + Cloud Map（ECS Service Discovery）でECSタスクへ直接ルーティングする構成を採用しています（同様にNAT GatewayではなくNAT Instance、ECS ServiceはFargate Spotを使用）。それ以外（prod環境）は引き続きPhase 3以降で構築します。
 
+ブランチはTerraformの環境分離に合わせて`develop`=dev環境、`prd`=prod環境（未構築）に対応しています（詳細は[CLAUDE.md](./CLAUDE.md)のブランチ戦略節を参照）。
+
 ## ディレクトリ構成
 
 ```text
