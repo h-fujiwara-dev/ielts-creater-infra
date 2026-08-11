@@ -2,3 +2,14 @@ aws_region            = "ap-northeast-1"
 cognito_domain_prefix = "ielts-creater"
 callback_urls         = ["http://localhost:3000/api/auth/callback/cognito"]
 logout_urls           = ["http://localhost:3000"]
+
+# Supabaseの直接接続ホスト（db.<project>.supabase.co）はIPv6のみでECS（IPv4のみのVPC）から到達できないため、
+# Project Settings > Database > Connection pooling の「Session pooler」接続文字列（IPv4対応）を使うこと
+supabase_db_url      = "jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require"
+supabase_db_username = "postgres.<project-ref>"
+supabase_db_password = "changeme"
+
+openai_api_key = "sk-changeme"
+
+cors_allowed_origins = "http://localhost:3000"
+backend_image_tag    = "latest"

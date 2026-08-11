@@ -23,3 +23,18 @@ output "hosted_ui_domain" {
   description = "Hosted UIドメイン"
   value       = module.cognito.hosted_ui_domain
 }
+
+output "api_endpoint" {
+  description = "backend APIのエンドポイント（#00043の frontend BACKEND_API_ORIGIN に設定）"
+  value       = module.api-gateway.api_endpoint
+}
+
+output "ecr_repository_url" {
+  description = "backendイメージのpush先ECRリポジトリURL"
+  value       = module.ecr.repository_url
+}
+
+output "storage_bucket_name" {
+  description = "Listening音声用S3バケット名"
+  value       = module.s3.bucket_name
+}
