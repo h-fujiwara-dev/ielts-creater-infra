@@ -1,12 +1,12 @@
 # IELTS Creator — Infra
 
-[IELTS Creator](https://github.com/h-fujiwara-dev/ielts-creater)を支えるAWSインフラ（VPC, ECS Fargate, RDS, S3, Cognito等）のTerraformコード。
+[IELTS Creator](https://github.com/h-fujiwara-dev/ielts-creater)を支えるAWSインフラ（VPC, ECS Fargate, S3, Cognito等）のTerraformコード。データベースは[Supabase](https://supabase.com/)（マネージドPostgreSQL）、フロントエンドは[Vercel](https://vercel.com/)でホスティングするため、RDS・フロントエンド用ECSサービスはこのリポジトリの対象外（[#00037](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/tickets/00037_インフラ構成の見直し（Vercel_Supabase化）とREADME構成図の追加.md)）。
 
 プロジェクト全体の概要・業務/システム要件・アーキテクチャ（AWS構成図含む）は[ielts-createrリポジトリ docs/システム要件定義書.md 8章](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/docs/システム要件定義書.md#8-アーキテクチャ)を参照してください。フロントエンドは[ielts-creater-frontend](https://github.com/h-fujiwara-dev/ielts-creater-frontend)、バックエンドは[ielts-creater-backend](https://github.com/h-fujiwara-dev/ielts-creater-backend)にあります。
 
 ## 現在の状況
 
-インフラ構築は[ロードマップ](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/docs/ロードマップ.md)上のPhase 3で着手予定です。Phase 1/2はAWSを使わずローカルで開発を進めますが、Cognito認証本実装（[ielts-createrリポジトリ #00034](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/tickets/00034_Cognito認証の本実装.md)）に伴い、tfstateバックエンドとCognito User Poolのみ前倒しで構築済みです。それ以外（network, ecs, rds等）は引き続きPhase 3で構築します。
+インフラ構築は[ロードマップ](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/docs/ロードマップ.md)上のPhase 3で着手予定です。Phase 1/2はAWSを使わずローカルで開発を進めますが、Cognito認証本実装（[ielts-createrリポジトリ #00034](https://github.com/h-fujiwara-dev/ielts-creater/blob/main/tickets/00034_Cognito認証の本実装.md)）に伴い、tfstateバックエンドとCognito User Poolのみ前倒しで構築済みです。それ以外（network, ecs等）は引き続きPhase 3で構築します。
 
 ## ディレクトリ構成
 
@@ -15,7 +15,8 @@ terraform/
 ├── bootstrap/   # tfstate用バックエンド（S3 + DynamoDB）※構築済み・ローカルstate
 ├── modules/
 │   └── cognito/ # Cognito User Pool・App Client ※構築済み
-│                # 未構築: network, security, alb, ecs_cluster, ecs_service, rds, s3, ecr, iam, observability
+│                # 未構築: network, security, alb, ecs_cluster, ecs_service（api用のみ）, s3, ecr, iam, observability
+│                # 対象外: rds（DBはSupabase）, フロントエンド用ecs_service（Vercelでホスティング）
 └── envs/
     ├── dev/     # cognitoモジュールを呼び出し ※構築済み
     └── prod/    # 未構築
