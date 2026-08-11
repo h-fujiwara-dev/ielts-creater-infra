@@ -1,0 +1,4 @@
+aws_region            = "ap-northeast-1"
+cognito_domain_prefix = "ielts-creater"
+callback_urls         = ["http://localhost:3000/api/auth/callback/cognito"]
+logout_urls           = ["http://localhost:3000"]
