@@ -68,3 +68,13 @@ resource "aws_cognito_user_pool_client" "web" {
     refresh_token = "days"
   }
 }
+
+# Hosted UI（Classic）の配色をfrontendのデザイントークンに合わせる（#00052）。
+# ロゴ画像は未用意のため配色調整のみ。domainの作成後でないと設定できない。
+resource "aws_cognito_user_pool_ui_customization" "web" {
+  client_id    = aws_cognito_user_pool_client.web.id
+  user_pool_id = aws_cognito_user_pool.this.id
+  css          = file("${path.module}/hosted-ui.css")
+
+  depends_on = [aws_cognito_user_pool_domain.this]
+}
