@@ -53,3 +53,39 @@ output "github_actions_deploy_role_arn" {
   description = "backend CI/CDワークフローがOIDCで引き受けるIAM RoleのARN"
   value       = aws_iam_role.github_actions_deploy.arn
 }
+
+output "cognito_custom_domain_acm_validation_records" {
+  description = "auth.band-eight.com用ACM証明書のDNS検証レコード（DNSプロバイダに追加した後にterraform applyで検証を待つ）"
+  value = [
+    for o in aws_acm_certificate.cognito_custom_domain.domain_validation_options : {
+      name  = o.resource_record_name
+      type  = o.resource_record_type
+      value = o.resource_record_value
+    }
+  ]
+}
+
+output "cognito_custom_domain_cloudfront_target" {
+  description = "auth.band-eight.comのCNAME先（Cognitoカスタムドメイン用CloudFrontディストリビューション）"
+  value       = module.cognito.custom_domain_cloudfront_distribution
+}
+
+output "ses_domain_verification_record" {
+  description = "band-eight.comのSESドメイン所有権検証用TXTレコード（_amazonses.band-eight.com）"
+  value = {
+    name  = "_amazonses.${aws_ses_domain_identity.this.domain}"
+    type  = "TXT"
+    value = aws_ses_domain_identity.this.verification_token
+  }
+}
+
+output "ses_dkim_records" {
+  description = "band-eight.comのSES DKIM検証用CNAMEレコード（3件）"
+  value = [
+    for token in aws_ses_domain_dkim.this.dkim_tokens : {
+      name  = "${token}._domainkey.${aws_ses_domain_identity.this.domain}"
+      type  = "CNAME"
+      value = "${token}.dkim.amazonses.com"
+    }
+  ]
+}
