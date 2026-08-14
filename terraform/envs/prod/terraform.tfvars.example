@@ -1,5 +1,5 @@
 aws_region            = "ap-northeast-1"
-cognito_domain_prefix = "ielts-creater-prod"
+cognito_domain_prefix = "ielts-creater" # modules/cognitoが内部で-${environment}を付与する（ielts-creater-prodになる）
 callback_urls         = ["https://band-eight.com/api/auth/callback/cognito"]
 logout_urls           = ["https://band-eight.com/login"]
 
