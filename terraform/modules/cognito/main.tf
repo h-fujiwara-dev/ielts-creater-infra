@@ -26,6 +26,16 @@ resource "aws_cognito_user_pool" "this" {
       priority = 1
     }
   }
+
+  # 未指定時はCognitoデフォルトの送信（no-reply@verificationemail.com、到達率が低い）のまま（#00053）
+  dynamic "email_configuration" {
+    for_each = var.ses_source_arn != null ? [1] : []
+    content {
+      email_sending_account = "DEVELOPER"
+      source_arn            = var.ses_source_arn
+      from_email_address    = var.email_from_address
+    }
+  }
 }
 
 resource "aws_cognito_user_pool_domain" "this" {

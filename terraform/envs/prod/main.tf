@@ -19,7 +19,7 @@ resource "aws_acm_certificate_validation" "cognito_custom_domain" {
   validation_record_fqdns = [for o in aws_acm_certificate.cognito_custom_domain.domain_validation_options : o.resource_record_name]
 }
 
-# --- SES送信ドメイン（band-eight.com）。Cognitoのemail_configuration切り替え自体は別チケット(#00053)の対象 ---
+# --- SES送信ドメイン（band-eight.com）。Cognitoのemail_configurationから参照する（#00053） ---
 resource "aws_ses_domain_identity" "this" {
   domain = "band-eight.com"
 }
@@ -31,12 +31,14 @@ resource "aws_ses_domain_dkim" "this" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  environment     = "prod"
-  domain_prefix   = var.cognito_domain_prefix
-  callback_urls   = var.callback_urls
-  logout_urls     = var.logout_urls
-  custom_domain   = "auth.band-eight.com"
-  certificate_arn = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
+  environment        = "prod"
+  domain_prefix      = var.cognito_domain_prefix
+  callback_urls      = var.callback_urls
+  logout_urls        = var.logout_urls
+  custom_domain      = "auth.band-eight.com"
+  certificate_arn    = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
+  ses_source_arn     = aws_ses_domain_identity.this.arn
+  email_from_address = "IELTS Creator <no-reply@band-eight.com>"
 }
 
 module "network" {

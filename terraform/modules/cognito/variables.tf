@@ -35,3 +35,15 @@ variable "certificate_arn" {
   type        = string
   default     = null
 }
+
+variable "ses_source_arn" {
+  description = "確認メール等の送信元として使うSES identity（ドメインまたはメールアドレス）のARN。指定時はCognitoデフォルトの送信（no-reply@verificationemail.com）ではなくSES経由の送信に切り替える（email_from_addressとセットで指定する）"
+  type        = string
+  default     = null
+}
+
+variable "email_from_address" {
+  description = "SES経由送信時のFromアドレス（例: \"IELTS Creator <no-reply@band-eight.com>\"）。ses_source_arn指定時は必須"
+  type        = string
+  default     = null
+}
