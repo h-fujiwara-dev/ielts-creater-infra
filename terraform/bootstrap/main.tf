@@ -51,3 +51,12 @@ resource "aws_dynamodb_table" "tfstate_lock" {
     prevent_destroy = true
   }
 }
+
+# GitHub ActionsのOIDC IDプロバイダ（AWSアカウントに1つだけ存在できるためbootstrapで一度だけ作成する）。
+# 各env（envs/prod等）のCI/CD用IAM Roleは、このプロバイダをdata "aws_iam_openid_connect_provider"で参照する。
+# thumbprint_listはAWSのGitHub Actions OIDC連携ガイドで案内されている値（GitHubの中間CA証明書のフィンガープリント）。
+resource "aws_iam_openid_connect_provider" "github_actions" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+}
