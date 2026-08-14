@@ -120,6 +120,8 @@ module "ecs" {
     COGNITO_REGION         = var.aws_region
     CORS_ALLOWED_ORIGINS   = var.cors_allowed_origins
     STORAGE_S3_BUCKET      = module.s3.bucket_name
+    # 既定はstub（実装規約.md 3.4章）。本番は実際にOpenAI/Pollyへ接続する
+    APP_GENERATION_MODE = "openai"
   }
 
   secrets = [
