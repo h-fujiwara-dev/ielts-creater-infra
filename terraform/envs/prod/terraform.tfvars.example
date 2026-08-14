@@ -1,0 +1,19 @@
+aws_region            = "ap-northeast-1"
+cognito_domain_prefix = "ielts-creater" # modules/cognitoが内部で-${environment}を付与する（ielts-creater-prodになる）
+callback_urls         = ["https://band-eight.com/api/auth/callback/cognito"]
+logout_urls           = ["https://band-eight.com/login"]
+
+# dev環境とは別に作成したprod専用のSupabaseプロジェクトを使うこと（データを分離するため）。
+# Supabaseの直接接続ホスト（db.<project>.supabase.co）はIPv6のみでECS（IPv4のみのVPC）から到達できないため、
+# Project Settings > Database > Connection pooling の「Session pooler」接続文字列（IPv4対応）を使うこと
+supabase_db_url      = "jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require"
+supabase_db_username = "postgres.<project-ref>"
+supabase_db_password = "changeme"
+
+openai_api_key = "sk-changeme"
+
+cors_allowed_origins = "https://band-eight.com"
+backend_image_tag    = "latest"
+
+github_actions_deploy_repo = "h-fujiwara-dev/ielts-creater-backend"
+github_actions_deploy_ref  = "refs/heads/main"

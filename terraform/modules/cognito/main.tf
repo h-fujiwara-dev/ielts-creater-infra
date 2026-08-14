@@ -29,8 +29,9 @@ resource "aws_cognito_user_pool" "this" {
 }
 
 resource "aws_cognito_user_pool_domain" "this" {
-  domain       = "${var.domain_prefix}-${var.environment}"
-  user_pool_id = aws_cognito_user_pool.this.id
+  domain          = coalesce(var.custom_domain, "${var.domain_prefix}-${var.environment}")
+  certificate_arn = var.custom_domain != null ? var.certificate_arn : null
+  user_pool_id    = aws_cognito_user_pool.this.id
 }
 
 # NextAuth.js（Authorization Code + PKCE）が使うApp Client。
