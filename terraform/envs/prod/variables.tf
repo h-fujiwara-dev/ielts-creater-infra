@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "cognito_domain_prefix" {
-  description = "Cognito Hosted UIドメインのプレフィックス（グローバルで一意である必要がある）"
+  description = "Cognito Hosted UIドメインのプレフィックス（グローバルで一意である必要がある）。modules/cognitoが内部で環境名のsuffixを付与するため、ここに環境名を含めない（含めると ielts-creater-prod-prod のように重複する）"
   type        = string
-  default     = "ielts-creater-prod"
+  default     = "ielts-creater"
 }
 
 variable "callback_urls" {
