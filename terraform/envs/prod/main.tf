@@ -1,10 +1,42 @@
+# --- Cognito Hosted UIカスタムドメイン（auth.band-eight.com）用ACM証明書 ---
+# DNS検証レコードはRoute53を使わないため手動でDNSプロバイダに追加する運用とし、
+# aws_acm_certificate_validationは検証完了まで待つ（そのDNSレコードが存在することが前提）。
+# apply時は先にaws_acm_certificate単体をtargetでapplyしてdomain_validation_optionsを取得し、
+# DNS追加後に残り全体をapplyする2段階運用とする（README参照）。
+resource "aws_acm_certificate" "cognito_custom_domain" {
+  provider          = aws.us_east_1
+  domain_name       = "auth.band-eight.com"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_acm_certificate_validation" "cognito_custom_domain" {
+  provider                = aws.us_east_1
+  certificate_arn         = aws_acm_certificate.cognito_custom_domain.arn
+  validation_record_fqdns = [for o in aws_acm_certificate.cognito_custom_domain.domain_validation_options : o.resource_record_name]
+}
+
+# --- SES送信ドメイン（band-eight.com）。Cognitoのemail_configuration切り替え自体は別チケット(#00053)の対象 ---
+resource "aws_ses_domain_identity" "this" {
+  domain = "band-eight.com"
+}
+
+resource "aws_ses_domain_dkim" "this" {
+  domain = aws_ses_domain_identity.this.domain
+}
+
 module "cognito" {
   source = "../../modules/cognito"
 
-  environment   = "prod"
-  domain_prefix = var.cognito_domain_prefix
-  callback_urls = var.callback_urls
-  logout_urls   = var.logout_urls
+  environment     = "prod"
+  domain_prefix   = var.cognito_domain_prefix
+  callback_urls   = var.callback_urls
+  logout_urls     = var.logout_urls
+  custom_domain   = "auth.band-eight.com"
+  certificate_arn = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
 }
 
 module "network" {

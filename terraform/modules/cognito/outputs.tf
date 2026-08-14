@@ -20,6 +20,11 @@ output "issuer_url" {
 }
 
 output "hosted_ui_domain" {
-  description = "Hosted UIのドメイン（<domain>.auth.<region>.amazoncognito.com）"
-  value       = "${aws_cognito_user_pool_domain.this.domain}.auth.${data.aws_region.current.name}.amazoncognito.com"
+  description = "Hosted UIのドメイン（custom_domain指定時はそのドメイン、未指定時は<domain>.auth.<region>.amazoncognito.com）"
+  value       = coalesce(var.custom_domain, "${aws_cognito_user_pool_domain.this.domain}.auth.${data.aws_region.current.name}.amazoncognito.com")
+}
+
+output "custom_domain_cloudfront_distribution" {
+  description = "custom_domain使用時、DNSにCNAMEで向ける先のCloudFrontディストリビューションドメイン名（custom_domain未指定時はnull）"
+  value       = var.custom_domain != null ? aws_cognito_user_pool_domain.this.cloudfront_distribution : null
 }
