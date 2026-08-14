@@ -1,0 +1,42 @@
+/*
+ * Cognito Hosted UI（Classic）のブランディング調整（#00052）。
+ * frontend（ielts-creater-frontend/src/app/globals.css）のデザイントークンに合わせた配色のみ。
+ * ロゴ画像は未用意のため対象外。
+ */
+
+.background-customizable {
+  background-color: #f8fafc;
+}
+
+.banner-customizable {
+  background-color: #0f172a;
+  padding: 25px 0px 25px 0px;
+}
+
+.label-customizable {
+  color: #0f172a;
+  font-weight: 400;
+}
+
+.textDescription-customizable {
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.idpDescription-customizable {
+  color: #0f172a;
+}
+
+.legalText-customizable {
+  color: #64748b;
+}
+
+.submitButton-customizable {
+  background-color: #f97316;
+  border-color: #f97316;
+}
+
+.submitButton-customizable:hover {
+  background-color: #fdba74;
+  border-color: #fdba74;
+}

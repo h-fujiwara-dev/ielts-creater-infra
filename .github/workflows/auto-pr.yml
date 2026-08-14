@@ -4,6 +4,8 @@ on:
   push:
     branches-ignore:
       - main
+      - develop
+      - prd
 
 permissions:
   contents: read
@@ -23,9 +25,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           branch="${GITHUB_REF#refs/heads/}"
-          count=$(gh pr list --head "$branch" --base main --state open --json number --jq 'length')
+
+          # 作業ブランチの分岐元(develop/prd)を merge-base で自動判定する。
+          # develop起点の分岐点がprd起点の分岐点の子孫であればdevelop、逆であればprd。
+          mb_dev=$(git merge-base origin/develop "$branch")
+          mb_prd=$(git merge-base origin/prd "$branch")
+          if git merge-base --is-ancestor "$mb_prd" "$mb_dev"; then
+            base=develop
+          else
+            base=prd
+          fi
+
+          count=$(gh pr list --head "$branch" --base "$base" --state open --json number --jq 'length')
           if [ "$count" -eq 0 ]; then
-            gh pr create --base main --head "$branch" --fill
+            gh pr create --base "$base" --head "$branch" --fill
           else
             echo "PR already exists for $branch, skipping."
           fi

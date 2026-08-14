@@ -1,0 +1,34 @@
+name: Release PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "リリース元ブランチ"
+        type: choice
+        options:
+          - develop
+          - prd
+        default: develop
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release PR (${{ inputs.source }} -> main)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          source="${{ inputs.source }}"
+          if gh pr list --base main --head "$source" --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "Release PR already open"
+          else
+            gh pr create --base main --head "$source" \
+              --title "Release: $source -> main" \
+              --body "Automated release PR created by release-pr.yml"
+          fi

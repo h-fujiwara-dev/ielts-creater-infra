@@ -1,0 +1,31 @@
+#!/bin/bash
+set -eux
+
+# Enable IPv4 forwarding permanently (NAT Instance replaces NAT Gateway for cost reasons).
+cat <<'SYSCTL' > /etc/sysctl.d/99-nat.conf
+net.ipv4.ip_forward = 1
+SYSCTL
+sysctl --system
+
+# MASQUERADE outbound traffic from the private subnets. Configured as a systemd unit
+# (rather than only in user-data) so the rule survives an instance reboot, since
+# user-data on Amazon Linux runs once at first boot only.
+cat <<'UNIT' > /etc/systemd/system/nat-masquerade.service
+[Unit]
+Description=Configure NAT MASQUERADE for ${vpc_cidr}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/iptables -t nat -A POSTROUTING -s ${vpc_cidr} -j MASQUERADE
+ExecStart=/usr/sbin/iptables -A FORWARD -s ${vpc_cidr} -j ACCEPT
+ExecStart=/usr/sbin/iptables -A FORWARD -d ${vpc_cidr} -j ACCEPT
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now nat-masquerade.service
