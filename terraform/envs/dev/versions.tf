@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 
   # bootstrap（terraform/bootstrap）で作成したS3+DynamoDBを使うリモートバックエンド。

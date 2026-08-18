@@ -23,3 +23,9 @@ variable "logout_urls" {
   description = "ログアウト後のリダイレクト先URL一覧"
   type        = list(string)
 }
+
+variable "guest_email" {
+  description = "ゲスト共有デモアカウントのメールアドレス（username_attributes=emailのためusernameとしても使用、#00056）"
+  type        = string
+  default     = "guest@ielts-creater.invalid"
+}
