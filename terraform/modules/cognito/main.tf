@@ -26,6 +26,15 @@ resource "aws_cognito_user_pool" "this" {
       priority = 1
     }
   }
+
+  # 確認コードメールをResend経由で送信する（#00057）
+  lambda_config {
+    kms_key_id = var.custom_email_sender_kms_key_arn
+    custom_email_sender {
+      lambda_arn     = var.custom_email_sender_lambda_arn
+      lambda_version = "V1_0"
+    }
+  }
 }
 
 resource "aws_cognito_user_pool_domain" "this" {

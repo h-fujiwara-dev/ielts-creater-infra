@@ -23,3 +23,13 @@ variable "logout_urls" {
   description = "ログアウト後のリダイレクト先URL一覧"
   type        = list(string)
 }
+
+variable "custom_email_sender_lambda_arn" {
+  description = "確認コードメール送信用Custom Email SenderのLambda ARN（email-senderモジュール、#00057）"
+  type        = string
+}
+
+variable "custom_email_sender_kms_key_arn" {
+  description = "Custom Email Senderが確認コードの復号に使うKMSキーARN（email-senderモジュール、#00057）"
+  type        = string
+}

@@ -17,6 +17,7 @@ terraform/
 ├── bootstrap/     # tfstate用バックエンド（S3 + DynamoDB）※構築済み・ローカルstate
 ├── modules/
 │   ├── cognito/     # Cognito User Pool・App Client ※構築済み
+│   ├── email-sender/ # Custom Email Sender Lambda（Cognito確認コードメールをResend経由で送信、#00057）※コード追加済み・apply未実施
 │   ├── network/     # VPC, Public/Private Subnet x2AZ, NAT Instance, Cloud Map namespace ※構築済み
 │   ├── ecr/         # backendイメージ用ECRリポジトリ ※構築済み
 │   ├── s3/          # Listening音声用S3バケット ※構築済み
