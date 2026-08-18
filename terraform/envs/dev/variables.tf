@@ -46,6 +46,17 @@ variable "openai_api_key" {
   sensitive   = true
 }
 
+variable "resend_api_key" {
+  description = "Resend APIキー（Cognito確認コードメール送信用、#00057。Secrets Managerへ格納する）"
+  type        = string
+  sensitive   = true
+}
+
+variable "resend_from_email" {
+  description = "確認コードメールの送信元アドレス（Resendで検証済みのドメインを使用、#00057）"
+  type        = string
+}
+
 variable "cors_allowed_origins" {
   description = "backendが許可するCORSオリジン（ローカルfrontendのURL、#00043参照）"
   type        = string

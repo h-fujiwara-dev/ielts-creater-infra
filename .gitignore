@@ -16,3 +16,7 @@
 
 # Node
 node_modules/
+
+# Lambda build artifacts（terraform applyのnull_resource/archive_fileが生成）
+terraform/modules/*/lambda/dist/
+terraform/modules/*/lambda/*.zip
