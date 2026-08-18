@@ -87,3 +87,53 @@ resource "aws_cognito_user_pool_ui_customization" "web" {
 
   depends_on = [aws_cognito_user_pool_domain.this]
 }
+
+# ゲスト機能（#00056）用のパブリッククライアント。Hosted UI/OAuthは使わず、
+# backendのGuestAuthServiceがInitiateAuth(USER_PASSWORD_AUTH)でプログラム的に
+# 固定の共有デモアカウントを認証するためだけに使う。既存のwebクライアント
+# （Authorization Code + PKCE、Hosted UI前提）とは完全に分離する。
+resource "aws_cognito_user_pool_client" "guest" {
+  name         = "ielts-creater-guest-${var.environment}"
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  generate_secret = false
+
+  explicit_auth_flows = [
+    "ALLOW_USER_PASSWORD_AUTH",
+  ]
+
+  prevent_user_existence_errors = "ENABLED"
+
+  access_token_validity = 60
+  id_token_validity     = 60
+
+  token_validity_units {
+    access_token = "minutes"
+    id_token     = "minutes"
+  }
+}
+
+# パスワードポリシー（8文字以上・大小英字・数字必須）を満たすランダムパスワードを生成する。
+# 人が入力することはなく、backendがSecrets Manager経由で参照するのみのため記号は含めない。
+resource "random_password" "guest_user" {
+  length      = 24
+  special     = false
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+}
+
+# ゲスト共有デモアカウント本体。管理者作成のため招待メールは送信しない（message_action=SUPPRESS）。
+# passwordを直接指定するとCONFIRMED状態の恒久パスワードとして設定される
+# （temporary_passwordと異なり初回ログイン時の強制変更を要求しない）。
+resource "aws_cognito_user" "guest" {
+  user_pool_id   = aws_cognito_user_pool.this.id
+  username       = var.guest_email
+  message_action = "SUPPRESS"
+  password       = random_password.guest_user.result
+
+  attributes = {
+    email          = var.guest_email
+    email_verified = "true"
+  }
+}

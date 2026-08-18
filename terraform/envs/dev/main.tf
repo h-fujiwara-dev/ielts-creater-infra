@@ -80,6 +80,20 @@ resource "aws_secretsmanager_secret_version" "openai_api_key" {
   secret_string = var.openai_api_key
 }
 
+# ゲスト機能（#00056）の共有デモアカウント資格情報。backendがInitiateAuth(USER_PASSWORD_AUTH)で
+# プログラム的にログインするためだけに使うため、Vercel(frontend)には配布せずECS(backend)にのみ注入する
+resource "aws_secretsmanager_secret" "guest_credentials" {
+  name = "ielts-creater-dev-guest-credentials"
+}
+
+resource "aws_secretsmanager_secret_version" "guest_credentials" {
+  secret_id = aws_secretsmanager_secret.guest_credentials.id
+  secret_string = jsonencode({
+    username = module.cognito.guest_username
+    password = module.cognito.guest_password
+  })
+}
+
 module "ecs" {
   source = "../../modules/ecs"
 
@@ -93,12 +107,13 @@ module "ecs" {
   s3_bucket_arn             = module.s3.bucket_arn
 
   environment_variables = {
-    SPRING_PROFILES_ACTIVE = "prod"
-    COGNITO_ISSUER_URI     = module.cognito.issuer_url
-    COGNITO_APP_CLIENT_ID  = module.cognito.user_pool_client_id
-    COGNITO_REGION         = var.aws_region
-    CORS_ALLOWED_ORIGINS   = var.cors_allowed_origins
-    STORAGE_S3_BUCKET      = module.s3.bucket_name
+    SPRING_PROFILES_ACTIVE  = "prod"
+    COGNITO_ISSUER_URI      = module.cognito.issuer_url
+    COGNITO_APP_CLIENT_ID   = module.cognito.user_pool_client_id
+    COGNITO_REGION          = var.aws_region
+    CORS_ALLOWED_ORIGINS    = var.cors_allowed_origins
+    STORAGE_S3_BUCKET       = module.s3.bucket_name
+    GUEST_COGNITO_CLIENT_ID = module.cognito.guest_user_pool_client_id
   }
 
   secrets = [
@@ -121,6 +136,16 @@ module "ecs" {
       name       = "OPENAI_API_KEY"
       valueFrom  = aws_secretsmanager_secret.openai_api_key.arn
       secret_arn = aws_secretsmanager_secret.openai_api_key.arn
+    },
+    {
+      name       = "GUEST_COGNITO_USERNAME"
+      valueFrom  = "${aws_secretsmanager_secret.guest_credentials.arn}:username::"
+      secret_arn = aws_secretsmanager_secret.guest_credentials.arn
+    },
+    {
+      name       = "GUEST_COGNITO_PASSWORD"
+      valueFrom  = "${aws_secretsmanager_secret.guest_credentials.arn}:password::"
+      secret_arn = aws_secretsmanager_secret.guest_credentials.arn
     },
   ]
 }

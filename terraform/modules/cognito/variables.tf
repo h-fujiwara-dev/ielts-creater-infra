@@ -33,3 +33,9 @@ variable "custom_email_sender_kms_key_arn" {
   description = "Custom Email Senderが確認コードの復号に使うKMSキーARN（email-senderモジュール、#00057）"
   type        = string
 }
+
+variable "guest_email" {
+  description = "ゲスト共有デモアカウントのメールアドレス（username_attributes=emailのためusernameとしても使用、#00056）"
+  type        = string
+  default     = "guest@ielts-creater.invalid"
+}
