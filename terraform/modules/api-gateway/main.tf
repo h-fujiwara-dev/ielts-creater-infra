@@ -23,6 +23,15 @@ resource "aws_apigatewayv2_integration" "this" {
   connection_type    = "VPC_LINK"
   connection_id      = aws_apigatewayv2_vpc_link.this.id
   integration_uri    = var.cloud_map_service_arn
+
+  # ゲスト機能（#00056）のIPアドレス単位クォータのため。HTTP_PROXY + VPC_LINK構成では
+  # X-Forwarded-Forが自動付与されず（実機確認で全リクエストがVPC内部IPとして記録される
+  # 不具合を確認）、request.getRemoteAddr()もVPC LinkのENI/Cloud Map経路のIPを返すため
+  # クライアントの実IPを取得できない。API Gateway自体が把握している$context.http.sourceIp
+  # を明示的にヘッダーとして注入する。
+  request_parameters = {
+    "overwrite:header.x-client-real-ip" = "$context.identity.sourceIp"
+  }
 }
 
 resource "aws_apigatewayv2_route" "proxy" {
