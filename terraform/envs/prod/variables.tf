@@ -69,3 +69,14 @@ variable "github_actions_deploy_ref" {
   type        = string
   default     = "refs/heads/main"
 }
+
+variable "resend_api_key" {
+  description = "Resend APIキー（Custom Email Senderが確認コードメール送信に使用。Secrets Managerへ格納する、#00057）"
+  type        = string
+  sensitive   = true
+}
+
+variable "resend_from_email" {
+  description = "確認コードメールのFromアドレス（Resendで検証済みのband-eight.comサブドメイン、#00057）"
+  type        = string
+}

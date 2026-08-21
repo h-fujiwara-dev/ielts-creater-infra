@@ -26,6 +26,19 @@ resource "aws_cognito_user_pool" "this" {
       priority = 1
     }
   }
+
+  # 確認コードメールをResend経由で送信する（#00057）。未指定環境では
+  # Cognitoデフォルトの送信のままとし、lambda_configブロック自体を生成しない。
+  dynamic "lambda_config" {
+    for_each = var.custom_email_sender_lambda_arn != null ? [1] : []
+    content {
+      kms_key_id = var.custom_email_sender_kms_key_arn
+      custom_email_sender {
+        lambda_arn     = var.custom_email_sender_lambda_arn
+        lambda_version = "V1_0"
+      }
+    }
+  }
 }
 
 resource "aws_cognito_user_pool_domain" "this" {

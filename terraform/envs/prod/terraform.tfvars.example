@@ -17,3 +17,6 @@ backend_image_tag    = "latest"
 
 github_actions_deploy_repo = "h-fujiwara-dev/ielts-creater-backend"
 github_actions_deploy_ref  = "refs/heads/main"
+
+resend_api_key    = "re_changeme"
+resend_from_email = "noreply@mail.band-eight.com"
