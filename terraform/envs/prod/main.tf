@@ -207,7 +207,14 @@ resource "aws_iam_role" "github_actions_deploy" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_actions_deploy_repo}:ref:${var.github_actions_deploy_ref}"
+          # GitHub側がOIDCトークンのsubクレームにowner/repoの不変ID（@数字）を付与する
+          # 形式（例: repo:owner@12345/repo@67890:ref:...）に変更したため、IDなし形式・
+          # ID付き形式の両方にマッチするようワイルドカードで許容する（実機のCloudTrailで
+          # AssumeRoleWithWebIdentityがsub不一致により拒否されるのを確認して対応）
+          "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_actions_deploy_repo}:ref:${var.github_actions_deploy_ref}",
+            "repo:${split("/", var.github_actions_deploy_repo)[0]}@*/${split("/", var.github_actions_deploy_repo)[1]}@*:ref:${var.github_actions_deploy_ref}",
+          ]
         }
       }
     }]
