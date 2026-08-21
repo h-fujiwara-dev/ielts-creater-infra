@@ -35,3 +35,15 @@ variable "certificate_arn" {
   type        = string
   default     = null
 }
+
+variable "custom_email_sender_lambda_arn" {
+  description = "確認コードメール送信用Custom Email SenderのLambda ARN（email-senderモジュール、#00057）。未指定時はCognitoデフォルトの送信のままとする"
+  type        = string
+  default     = null
+}
+
+variable "custom_email_sender_kms_key_arn" {
+  description = "Custom Email Senderが確認コードの復号に使うKMSキーARN（email-senderモジュール、#00057）。custom_email_sender_lambda_arn指定時のみ使用する"
+  type        = string
+  default     = null
+}

@@ -28,15 +28,25 @@ resource "aws_ses_domain_dkim" "this" {
   domain = aws_ses_domain_identity.this.domain
 }
 
+module "email_sender" {
+  source = "../../modules/email-sender"
+
+  environment       = "prod"
+  resend_api_key    = var.resend_api_key
+  resend_from_email = var.resend_from_email
+}
+
 module "cognito" {
   source = "../../modules/cognito"
 
-  environment     = "prod"
-  domain_prefix   = var.cognito_domain_prefix
-  callback_urls   = var.callback_urls
-  logout_urls     = var.logout_urls
-  custom_domain   = "auth.band-eight.com"
-  certificate_arn = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
+  environment                     = "prod"
+  domain_prefix                   = var.cognito_domain_prefix
+  callback_urls                   = var.callback_urls
+  logout_urls                     = var.logout_urls
+  custom_domain                   = "auth.band-eight.com"
+  certificate_arn                 = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
+  custom_email_sender_lambda_arn  = module.email_sender.lambda_arn
+  custom_email_sender_kms_key_arn = module.email_sender.kms_key_arn
 }
 
 module "network" {
