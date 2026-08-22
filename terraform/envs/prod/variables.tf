@@ -13,7 +13,12 @@ variable "cognito_domain_prefix" {
 variable "callback_urls" {
   description = "OAuthログイン成功後のリダイレクト先URL一覧（#00051で確定したband-eight.comを見込む）"
   type        = list(string)
-  default     = ["https://band-eight.com/api/auth/callback/cognito"]
+  # cognito-signupは「無料ではじめる」ボタン用の2つ目のNextAuthプロバイダ
+  # （frontend側 #00062、Hosted UIの/signupエンドポイントへ直接誘導する）のコールバック。
+  default = [
+    "https://band-eight.com/api/auth/callback/cognito",
+    "https://band-eight.com/api/auth/callback/cognito-signup",
+  ]
 }
 
 variable "logout_urls" {
