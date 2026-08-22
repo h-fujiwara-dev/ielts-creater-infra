@@ -27,6 +27,36 @@ data "archive_file" "lambda" {
 resource "aws_kms_key" "custom_email_sender" {
   description             = "Cognito Custom Email Sender用（確認コードの暗号化、#00057）"
   deletion_window_in_days = 7
+
+  # デフォルトのキーポリシー（アカウントrootへのkms:*委譲）だけではCognitoサービスが
+  # このキーを使えず、確認コードの暗号化に失敗して結果的にLambdaが一度も呼ばれない
+  # （Cognitoは失敗を利用者に見せず、確認コード自体を送らないだけになる）。
+  # Cognito Custom Email Sender公式ドキュメント通りcognito-idp.amazonaws.comへの
+  # 明示的な許可を追加する。
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Id      = "key-default-1"
+    Statement = [
+      {
+        Sid       = "EnableIamUserPermissions"
+        Effect    = "Allow"
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
+        Action    = "kms:*"
+        Resource  = "*"
+      },
+      {
+        Sid       = "AllowCognitoUseOfKey"
+        Effect    = "Allow"
+        Principal = { Service = "cognito-idp.amazonaws.com" }
+        Action = [
+          "kms:CreateGrant",
+          "kms:Decrypt",
+          "kms:DescribeKey",
+        ]
+        Resource = "*"
+      },
+    ]
+  })
 }
 
 resource "aws_kms_alias" "custom_email_sender" {
@@ -71,7 +101,7 @@ resource "aws_iam_role_policy" "lambda_kms" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = "kms:Decrypt"
+      Action   = ["kms:Decrypt", "kms:DescribeKey"]
       Resource = aws_kms_key.custom_email_sender.arn
     }]
   })
@@ -106,6 +136,7 @@ resource "aws_lambda_function" "custom_email_sender" {
     variables = {
       RESEND_API_KEY_SECRET_ARN = aws_secretsmanager_secret.resend_api_key.arn
       RESEND_FROM_EMAIL         = var.resend_from_email
+      KMS_KEY_ARN               = aws_kms_key.custom_email_sender.arn
     }
   }
 }
