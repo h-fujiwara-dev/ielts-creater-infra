@@ -1,12 +1,18 @@
-import { KMSClient, DecryptCommand } from "@aws-sdk/client-kms";
+import { KmsKeyringNode, buildClient, CommitmentPolicy } from "@aws-crypto/client-node";
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 import { Resend } from "resend";
 
-const kms = new KMSClient({});
 const secretsManager = new SecretsManagerClient({});
+
+// Cognitoはエンベロープ暗号化（AWS Encryption SDKのメッセージフォーマット）でコードを渡すため、
+// 生のkms:Decryptではなく AWS Encryption SDK で復号する必要がある（AWS公式ドキュメント準拠）。
+const { decrypt } = buildClient(CommitmentPolicy.REQUIRE_ENCRYPT_ALLOW_DECRYPT);
+const kmsKeyArn = process.env.KMS_KEY_ARN;
+if (!kmsKeyArn) throw new Error("KMS_KEY_ARN is not set");
+const keyring = new KmsKeyringNode({ generatorKeyId: kmsKeyArn, keyIds: [kmsKeyArn] });
 
 // コールドスタート後のウォーム呼び出しで使い回すキャッシュ
 let cachedApiKey: string | undefined;
@@ -44,8 +50,7 @@ async function resolveApiKey(): Promise<string> {
 }
 
 // CognitoのCustom Email Senderトリガー契約（AWSドキュメント準拠）:
-// event.request.code はKMSで暗号化された確認コード（base64）。
-// EncryptionContextは { "aws:cognito:username": userName, "customEmailSender": "true" } で復号する必要がある。
+// event.request.code はAWS Encryption SDKでエンベロープ暗号化された確認コード（base64）。
 export const handler = async (event: CustomEmailSenderEvent): Promise<void> => {
   const { request, userName, triggerSource } = event;
 
@@ -60,17 +65,8 @@ export const handler = async (event: CustomEmailSenderEvent): Promise<void> => {
     throw new Error(`email attribute not found for userName=${userName}`);
   }
 
-  const decrypted = await kms.send(
-    new DecryptCommand({
-      CiphertextBlob: Buffer.from(request.code, "base64"),
-      EncryptionContext: {
-        "aws:cognito:username": userName,
-        customEmailSender: "true",
-      },
-    })
-  );
-  if (!decrypted.Plaintext) throw new Error("KMS decrypt returned empty plaintext");
-  const code = Buffer.from(decrypted.Plaintext).toString("utf-8");
+  const { plaintext } = await decrypt(keyring, Buffer.from(request.code, "base64"));
+  const code = Buffer.from(plaintext).toString("utf-8");
 
   const apiKey = await resolveApiKey();
   const resend = new Resend(apiKey);
