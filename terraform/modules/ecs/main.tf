@@ -177,12 +177,14 @@ resource "aws_ecs_task_definition" "this" {
       secrets     = [for s in var.secrets : { name = s.name, valueFrom = s.valueFrom }]
 
       # ECSはこの結果をCloud Mapのcustom health statusへ反映する（health_check_custom_config参照）
+      # startPeriod: prod実機でSpring Boot起動（Flyway検証+JPA初期化含む）に約113秒かかることを
+      # 確認したため、60秒では起動完了前にヘルスチェック失敗でタスクが強制終了されていた（#00058）
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/actuator/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
-        startPeriod = 60
+        startPeriod = 180
       }
 
       logConfiguration = {
