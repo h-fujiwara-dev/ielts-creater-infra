@@ -28,3 +28,19 @@ output "custom_domain_cloudfront_distribution" {
   description = "custom_domain使用時、DNSにCNAMEで向ける先のCloudFrontディストリビューションドメイン名（custom_domain未指定時はnull）"
   value       = var.custom_domain != null ? aws_cognito_user_pool_domain.this.cloudfront_distribution : null
 }
+
+output "guest_user_pool_client_id" {
+  description = "ゲスト用App Client ID（backendの app.guest.cognito.client-id に設定、#00056）"
+  value       = aws_cognito_user_pool_client.guest.id
+}
+
+output "guest_username" {
+  description = "ゲスト共有デモアカウントのユーザー名（backendの GUEST_COGNITO_USERNAME に設定）"
+  value       = aws_cognito_user.guest.username
+}
+
+output "guest_password" {
+  description = "ゲスト共有デモアカウントのパスワード（backendの GUEST_COGNITO_PASSWORD に設定、Secrets Manager経由で注入）"
+  value       = random_password.guest_user.result
+  sensitive   = true
+}
