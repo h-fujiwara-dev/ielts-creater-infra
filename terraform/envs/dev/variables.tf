@@ -24,7 +24,10 @@ variable "callback_urls" {
 variable "logout_urls" {
   description = "ログアウト後のリダイレクト先URL一覧"
   type        = list(string)
-  default     = ["http://localhost:3000"]
+  # frontend側cognito-logout route（GET /api/auth/cognito-logout）は/loginへリダイレクトする
+  # 実装のため、実際にCognito App Clientへ登録すべき値は/login付き。デフォルト値がこの実態と
+  # 乖離していたため実態に合わせる（#00062で発覚）。
+  default = ["http://localhost:3000/login"]
 }
 
 variable "supabase_db_url" {
