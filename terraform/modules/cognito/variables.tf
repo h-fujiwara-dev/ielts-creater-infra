@@ -47,3 +47,9 @@ variable "custom_email_sender_kms_key_arn" {
   type        = string
   default     = null
 }
+
+variable "guest_email" {
+  description = "ゲスト共有デモアカウントのメールアドレス（username_attributes=emailのためusernameとしても使用、#00056）"
+  type        = string
+  default     = "guest@ielts-creater.invalid"
+}
