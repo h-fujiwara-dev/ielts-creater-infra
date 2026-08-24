@@ -1,39 +1,127 @@
 /*
- * Cognito Hosted UI（Classic）のブランディング調整（#00052）。
- * frontend（ielts-creater-frontend/src/app/globals.css）のデザイントークンに合わせた配色のみ。
- * ロゴ画像は未用意のため対象外。
+ * Cognito Hosted UI（Classic）のブランディング調整（#00052 / #00067）。
+ * frontend（ielts-creater-frontend/src/app/globals.css）のデザイントークンに合わせた
+ * 配色・フォント・角丸・ロゴ配置。デザイン検討・モックアップは ielts-creater リポジトリの
+ * docs/design-drafts/（#00065）で行い、その提案内容をそのまま反映している。
+ *
+ * 既知の制約（#00065調査時点。これを超える変更はこのファイルでは行わない）:
+ * - ページ全体（<body>）の背景・1カラムのレイアウト構造自体は変更不可。
+ *   .background-customizable はサインインカード自体（バナー+フォーム全体）の
+ *   背景・角丸・影を制御する外側コンテナ。.banner-customizable はその内側の子要素
+ *   （.modal-content.background-customizable > ... > .banner-customizable）。
+ *   overflow: hidden を付けることで内側の四角い .banner-customizable もカードの角丸に
+ *   沿ってクリップされる
+ * - 外部Webフォント（Google Fonts経由の"Plus Jakarta Sans"/"Noto Sans JP"）は読み込み不可。
+ *   frontendの --font-sans のうちシステムフォントfallback部分のみを指定する
+ * - 表示言語（英語/日本語）はブラウザのAccept-Languageヘッダー依存で、CSS/Terraformから
+ *   固定する手段はない（ui_locales=ja クエリパラメータも実機検証で無効と確認済み）。
+ *   このCSSはあくまで色・フォント等のスタイルのみを制御し、AWS管理の固定文言（ラベル・
+ *   ボタンテキスト等）自体は差し替えられない
+ * - ロゴ画像は aws_cognito_user_pool_ui_customization の image_file 属性で設定する
+ *   （assets/logo.png、#00067。.logo-customizable はそのロゴ画像のサイズ・余白のみを制御する）
+ * - 送信ボタン・リンクの配色はWCAG AA基準（4.5:1）を満たすよう見直し済み（#00065）。
+ *   白文字onオレンジ（旧: 約2.9:1）→ ネイビー文字onオレンジ（約6.2:1）、
+ *   オレンジ文字onリンク（旧: 約2.8:1）→ 濃いオレンジ#c2410c（約5.1:1）
  */
 
 .background-customizable {
   background-color: #f8fafc;
+  border-radius: 14px; /* frontend --radius-xl 相当。.card コンポーネントと揃える */
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08); /* frontend .card と同じ1pxリング */
+  overflow: hidden; /* 内側の .banner-customizable（四角）をカードの角丸でクリップする */
 }
 
 .banner-customizable {
   background-color: #0f172a;
-  padding: 25px 0px 25px 0px;
+  padding: 20px 0px 20px 0px;
+}
+
+.logo-customizable {
+  max-width: 200px;
+  max-height: 48px;
 }
 
 .label-customizable {
   color: #0f172a;
   font-weight: 400;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
 }
 
 .textDescription-customizable {
   color: #0f172a;
   font-size: 16px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
 }
 
 .idpDescription-customizable {
   color: #0f172a;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
 }
 
 .legalText-customizable {
   color: #64748b;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+}
+
+.inputField-customizable {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0; /* frontend --color-border */
+  border-radius: 8px; /* frontend --radius-md 相当。.input コンポーネントと揃える */
+  color: #0f172a;
+  font-size: 15px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+}
+
+.inputField-customizable:focus {
+  border-color: #0f172a;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1); /* frontend .input:focus と同じリング */
+}
+
+.errorMessage-customizable {
+  color: #b91c1c; /* frontend --color-error */
+  background-color: #fef2f2; /* frontend --color-error-bg */
+  border: 1px solid #fecaca; /* frontend --color-error-border */
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+}
+
+.redirect-customizable {
+  color: #c2410c; /* オレンジ700相当。素の--color-brand-orangeは白系背景とのコントラスト比が約2.8:1でAA基準(4.5:1)未達のため、5.1:1を満たす濃いシェードに変更（#00065） */
+  font-weight: 600;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+}
+
+.redirect-customizable:hover {
+  color: #9a3412; /* オレンジ800相当。hoverでさらに濃く */
 }
 
 .submitButton-customizable {
   background-color: #f97316;
   border-color: #f97316;
+  border-radius: 8px;
+  color: #0f172a; /* アプリ本体の.btn-accentパターン（オレンジ地にネイビー文字）に統一。白文字（旧: 約2.9:1）はAA基準未達だったため変更（#00065） */
+  font-weight: 600;
+  min-height: 44px; /* タッチターゲットサイズ確保 */
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
 }
 
 .submitButton-customizable:hover {
