@@ -108,9 +108,21 @@
     "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
 }
 
-.redirect-customizable:hover {
-  color: #9a3412; /* オレンジ800相当。hoverでさらに濃く */
-}
+/*
+ * 既知の制約（#00067でdev環境実機確認時に判明）: 「Need an account? Sign up」は
+ * 親<a class="redirect-customizable">の中に子<a>（クラスなし）としてSign upだけが
+ * ネストされており、親のcolorを継承しない。子孫セレクタ.redirect-customizable a も
+ * SetUICustomization APIから InvalidParameterException で拒否されるため、
+ * Sign upリンクだけCognito標準の青のまま残る。CSSカスタマイズの範囲では解決不可。
+ */
+
+/*
+ * .redirect-customizable:hover はCognito Hosted UI（Classic）の許可クラス一覧に無く、
+ * SetUICustomization APIが InvalidParameterException で拒否する（#00067でdev環境
+ * 実機確認時に判明）。AWSが公式に:hoverをサポートしているのは
+ * .idpButton-customizable:hover / .socialButton-customizable:hover /
+ * .submitButton-customizable:hover の3つのみのため、ここでは追加しない。
+ */
 
 .submitButton-customizable {
   background-color: #f97316;
