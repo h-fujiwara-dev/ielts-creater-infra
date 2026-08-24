@@ -13,12 +13,7 @@ variable "cognito_domain_prefix" {
 variable "callback_urls" {
   description = "OAuthログイン成功後のリダイレクト先URL一覧（#00051で確定したband-eight.comを見込む）"
   type        = list(string)
-  # cognito-signupは「無料ではじめる」ボタン用の2つ目のNextAuthプロバイダ
-  # （frontend側 #00062、Hosted UIの/signupエンドポイントへ直接誘導する）のコールバック。
-  default = [
-    "https://band-eight.com/api/auth/callback/cognito",
-    "https://band-eight.com/api/auth/callback/cognito-signup",
-  ]
+  default     = ["https://band-eight.com/api/auth/callback/cognito"]
 }
 
 variable "logout_urls" {
@@ -73,15 +68,4 @@ variable "github_actions_deploy_ref" {
   description = "CI/CD用IAM Role（OIDC）を引き受けられるGitHub ref（ブランチ）"
   type        = string
   default     = "refs/heads/main"
-}
-
-variable "resend_api_key" {
-  description = "Resend APIキー（Custom Email Senderが確認コードメール送信に使用。Secrets Managerへ格納する、#00057）"
-  type        = string
-  sensitive   = true
-}
-
-variable "resend_from_email" {
-  description = "確認コードメールのFromアドレス（Resendで検証済みのband-eight.comサブドメイン、#00057）"
-  type        = string
 }
