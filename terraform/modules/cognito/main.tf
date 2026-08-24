@@ -83,12 +83,14 @@ resource "aws_cognito_user_pool_client" "web" {
   }
 }
 
-# Hosted UI（Classic）の配色をfrontendのデザイントークンに合わせる（#00052）。
-# ロゴ画像は未用意のため配色調整のみ。domainの作成後でないと設定できない。
+# Hosted UI（Classic）の配色・ロゴをfrontendのデザイントークンに合わせる（#00052 / #00067）。
+# ロゴはassets/logo.png（ielts-creater docs/design-drafts/のマスターSVGから書き出し、#00065）。
+# domainの作成後でないと設定できない。
 resource "aws_cognito_user_pool_ui_customization" "web" {
   client_id    = aws_cognito_user_pool_client.web.id
   user_pool_id = aws_cognito_user_pool.this.id
   css          = file("${path.module}/hosted-ui.css")
+  image_file   = filebase64("${path.module}/assets/logo.png")
 
   depends_on = [aws_cognito_user_pool_domain.this]
 }
