@@ -16,3 +16,5 @@
 
 # Node
 node_modules/
+terraform/modules/*/lambda/dist/
+terraform/modules/*/lambda/*.zip

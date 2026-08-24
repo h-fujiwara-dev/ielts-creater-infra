@@ -23,7 +23,8 @@ terraform/
 │   ├── ecr/         # backendイメージ用ECRリポジトリ ※構築済み
 │   ├── s3/          # Listening音声用S3バケット ※構築済み
 │   ├── ecs/         # ECS Cluster(Fargate Spot)・Service・Task Definition・Cloud Map登録 ※構築済み
-│   └── api-gateway/ # HTTP API + VPC Link + Cloud Map private integration（ALBの代わり） ※構築済み
+│   ├── api-gateway/ # HTTP API + VPC Link + Cloud Map private integration（ALBの代わり） ※構築済み
+│   └── email-sender/ # Custom Email Sender Lambda（Cognito確認コードメールをResend経由で送信、#00057） ※構築済み
 │                     # 対象外: rds（DBはSupabase）, フロントエンド用ecs_service（Vercelでホスティング）
 └── envs/
     ├── dev/     # 上記モジュールを呼び出し ※構築済み
