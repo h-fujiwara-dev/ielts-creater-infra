@@ -27,7 +27,18 @@ resource "aws_cognito_user_pool" "this" {
     }
   }
 
-  # 確認コードメールをResend経由で送信する（#00057）。未指定環境では
+  # 確認コードメールをSES経由（band-eight.comドメイン）で送信する（#00053）。未指定時は
+  # Cognitoデフォルトの送信（no-reply@verificationemail.com、到達率が低い）のまま。
+  dynamic "email_configuration" {
+    for_each = var.ses_source_arn != null ? [1] : []
+    content {
+      email_sending_account = "DEVELOPER"
+      source_arn            = var.ses_source_arn
+      from_email_address    = var.email_from_address
+    }
+  }
+
+  # 確認コードメールをResend経由で送信する（#00057）。未指定環境（#00058時点のprod等）では
   # Cognitoデフォルトの送信のままとし、lambda_configブロック自体を生成しない。
   dynamic "lambda_config" {
     for_each = var.custom_email_sender_lambda_arn != null ? [1] : []
