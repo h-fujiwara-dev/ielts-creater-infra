@@ -11,5 +11,8 @@ supabase_db_password = "changeme"
 
 openai_api_key = "sk-changeme"
 
+resend_api_key    = "re_changeme"
+resend_from_email = "noreply@mail.band-eight.com"
+
 cors_allowed_origins = "http://localhost:3000"
 backend_image_tag    = "latest"

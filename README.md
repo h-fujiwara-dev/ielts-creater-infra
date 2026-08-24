@@ -18,7 +18,8 @@ backendのprod環境への継続的デプロイは、GitHub Actions（backendリ
 terraform/
 ├── bootstrap/     # tfstate用バックエンド（S3 + DynamoDB）+ GitHub Actions用OIDC IDプロバイダ ※構築済み・ローカルstate
 ├── modules/
-│   ├── cognito/     # Cognito User Pool・App Client ※構築済み
+│   ├── cognito/     # Cognito User Pool・App Client（ゲスト用App Client・共有デモアカウント含む） ※構築済み
+│   ├── email-sender/ # Custom Email Sender Lambda（Cognito確認コードメールをResend経由で送信、#00057）※dev/prod両方に導入済み
 │   ├── network/     # VPC, Public/Private Subnet x2AZ, NAT Instance, Cloud Map namespace ※構築済み
 │   ├── ecr/         # backendイメージ用ECRリポジトリ ※構築済み
 │   ├── s3/          # Listening音声用S3バケット ※構築済み

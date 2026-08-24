@@ -31,12 +31,14 @@ resource "aws_ses_domain_dkim" "this" {
 module "cognito" {
   source = "../../modules/cognito"
 
-  environment     = "prod"
-  domain_prefix   = var.cognito_domain_prefix
-  callback_urls   = var.callback_urls
-  logout_urls     = var.logout_urls
-  custom_domain   = "auth.band-eight.com"
-  certificate_arn = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
+  environment        = "prod"
+  domain_prefix      = var.cognito_domain_prefix
+  callback_urls      = var.callback_urls
+  logout_urls        = var.logout_urls
+  custom_domain      = "auth.band-eight.com"
+  certificate_arn    = aws_acm_certificate_validation.cognito_custom_domain.certificate_arn
+  ses_source_arn     = aws_ses_domain_identity.this.arn
+  email_from_address = "IELTS Creator <no-reply@band-eight.com>"
 }
 
 module "network" {
@@ -101,6 +103,20 @@ resource "aws_secretsmanager_secret_version" "openai_api_key" {
   secret_string = var.openai_api_key
 }
 
+# ゲスト機能（#00056/#00058）の共有デモアカウント資格情報。backendがInitiateAuth(USER_PASSWORD_AUTH)で
+# プログラム的にログインするためだけに使うため、Vercel(frontend)には配布せずECS(backend)にのみ注入する
+resource "aws_secretsmanager_secret" "guest_credentials" {
+  name = "ielts-creater-prod-guest-credentials"
+}
+
+resource "aws_secretsmanager_secret_version" "guest_credentials" {
+  secret_id = aws_secretsmanager_secret.guest_credentials.id
+  secret_string = jsonencode({
+    username = module.cognito.guest_username
+    password = module.cognito.guest_password
+  })
+}
+
 module "ecs" {
   source = "../../modules/ecs"
 
@@ -114,12 +130,13 @@ module "ecs" {
   s3_bucket_arn             = module.s3.bucket_arn
 
   environment_variables = {
-    SPRING_PROFILES_ACTIVE = "prod"
-    COGNITO_ISSUER_URI     = module.cognito.issuer_url
-    COGNITO_APP_CLIENT_ID  = module.cognito.user_pool_client_id
-    COGNITO_REGION         = var.aws_region
-    CORS_ALLOWED_ORIGINS   = var.cors_allowed_origins
-    STORAGE_S3_BUCKET      = module.s3.bucket_name
+    SPRING_PROFILES_ACTIVE  = "prod"
+    COGNITO_ISSUER_URI      = module.cognito.issuer_url
+    COGNITO_APP_CLIENT_ID   = module.cognito.user_pool_client_id
+    COGNITO_REGION          = var.aws_region
+    CORS_ALLOWED_ORIGINS    = var.cors_allowed_origins
+    STORAGE_S3_BUCKET       = module.s3.bucket_name
+    GUEST_COGNITO_CLIENT_ID = module.cognito.guest_user_pool_client_id
     # 既定はstub（実装規約.md 3.4章）。本番は実際にOpenAI/Pollyへ接続する
     APP_GENERATION_MODE = "openai"
   }
@@ -144,6 +161,16 @@ module "ecs" {
       name       = "OPENAI_API_KEY"
       valueFrom  = aws_secretsmanager_secret.openai_api_key.arn
       secret_arn = aws_secretsmanager_secret.openai_api_key.arn
+    },
+    {
+      name       = "GUEST_COGNITO_USERNAME"
+      valueFrom  = "${aws_secretsmanager_secret.guest_credentials.arn}:username::"
+      secret_arn = aws_secretsmanager_secret.guest_credentials.arn
+    },
+    {
+      name       = "GUEST_COGNITO_PASSWORD"
+      valueFrom  = "${aws_secretsmanager_secret.guest_credentials.arn}:password::"
+      secret_arn = aws_secretsmanager_secret.guest_credentials.arn
     },
   ]
 }
@@ -180,7 +207,14 @@ resource "aws_iam_role" "github_actions_deploy" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_actions_deploy_repo}:ref:${var.github_actions_deploy_ref}"
+          # GitHub側がOIDCトークンのsubクレームにowner/repoの不変ID（@数字）を付与する
+          # 形式（例: repo:owner@12345/repo@67890:ref:...）に変更したため、IDなし形式・
+          # ID付き形式の両方にマッチするようワイルドカードで許容する（実機のCloudTrailで
+          # AssumeRoleWithWebIdentityがsub不一致により拒否されるのを確認して対応）
+          "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_actions_deploy_repo}:ref:${var.github_actions_deploy_ref}",
+            "repo:${split("/", var.github_actions_deploy_repo)[0]}@*/${split("/", var.github_actions_deploy_repo)[1]}@*:ref:${var.github_actions_deploy_ref}",
+          ]
         }
       }
     }]

@@ -38,3 +38,8 @@ output "storage_bucket_name" {
   description = "Listening音声用S3バケット名"
   value       = module.s3.bucket_name
 }
+
+output "guest_user_pool_client_id" {
+  description = "ゲスト用App Client ID（backendの app.guest.cognito.client-id に設定、#00056。実際の注入はECS環境変数 GUEST_COGNITO_CLIENT_ID 経由で自動化済み）"
+  value       = module.cognito.guest_user_pool_client_id
+}
