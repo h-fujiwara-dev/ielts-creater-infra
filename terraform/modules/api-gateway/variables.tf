@@ -17,3 +17,13 @@ variable "cloud_map_service_arn" {
   description = "Private integration先のCloud MapサービスARN（modules/ecsの出力）"
   type        = string
 }
+
+variable "jwt_issuer" {
+  description = "Cognito JWT Authorizerが検証するissuer URL（modules/cognitoのissuer_url出力）"
+  type        = string
+}
+
+variable "jwt_audience" {
+  description = "Cognito JWT Authorizerが受理するapp client ID一覧（アクセストークンのclient_idクレームと照合される）"
+  type        = list(string)
+}

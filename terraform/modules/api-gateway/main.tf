@@ -34,16 +34,45 @@ resource "aws_apigatewayv2_integration" "this" {
   }
 }
 
+# backendのSpring Securityはこれまで唯一の認証境界だった（#00075、多層防御のため追加）。
+# JWT Authorizerをproxy/rootルートに適用し、認証をAPI Gateway層でも検証する。
+# ゲストトークン発行エンドポイント（POST /api/v1/auth/guest-token）はトークンを
+# 持たない状態で呼ばれる必要があるため、専用の完全一致ルートで認証を除外する
+# （HTTP APIは完全一致ルートを{proxy+}ワイルドカードより優先する）。
+resource "aws_apigatewayv2_authorizer" "cognito" {
+  api_id           = aws_apigatewayv2_api.this.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "${local.name_prefix}-cognito-authorizer"
+
+  jwt_configuration {
+    audience = var.jwt_audience
+    issuer   = var.jwt_issuer
+  }
+}
+
+resource "aws_apigatewayv2_route" "guest_token" {
+  api_id    = aws_apigatewayv2_api.this.id
+  route_key = "POST /api/v1/auth/guest-token"
+  target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+}
+
 resource "aws_apigatewayv2_route" "proxy" {
   api_id    = aws_apigatewayv2_api.this.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
 
 resource "aws_apigatewayv2_route" "root" {
   api_id    = aws_apigatewayv2_api.this.id
   route_key = "ANY /"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
 
 resource "aws_apigatewayv2_stage" "default" {
