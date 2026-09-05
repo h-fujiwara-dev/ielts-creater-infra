@@ -18,7 +18,11 @@ resource "aws_cognito_user_pool" "this" {
     require_symbols   = false
   }
 
-  mfa_configuration = "OFF"
+  mfa_configuration = "OPTIONAL"
+
+  software_token_mfa_configuration {
+    enabled = true
+  }
 
   account_recovery_setting {
     recovery_mechanism {
