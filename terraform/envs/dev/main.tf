@@ -157,4 +157,7 @@ module "api-gateway" {
   private_subnet_ids        = module.network.private_subnet_ids
   vpclink_security_group_id = aws_security_group.vpclink.id
   cloud_map_service_arn     = module.ecs.cloud_map_service_arn
+
+  jwt_issuer   = module.cognito.issuer_url
+  jwt_audience = [module.cognito.user_pool_client_id, module.cognito.guest_user_pool_client_id]
 }
